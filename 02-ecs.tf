@@ -22,14 +22,19 @@ resource "aws_ecs_capacity_provider" "app" {
 }
 
 resource "aws_autoscaling_group" "app" {
-  name                 = "${local.appid}-app"
-  availability_zones   = ["ap-northeast-1a"]
-  max_size             = 0
-  min_size             = 0
-  desired_capacity     = 0
-  health_check_type    = "ELB"
-  force_delete         = true
-  launch_configuration = aws_launch_configuration.app.name
+  name               = "${local.appid}-app"
+  availability_zones = ["ap-northeast-1a"]
+  max_size           = 0
+  min_size           = 0
+  desired_capacity   = 0
+  health_check_type  = "ELB"
+  force_delete       = true
+
+  launch_template {
+    id      = aws_launch_template.app.id
+    version = "$Latest"
+  }
+
   enabled_metrics = [
     "GroupMinSize",
     "GroupMaxSize",
@@ -82,22 +87,19 @@ resource "aws_security_group" "app" {
   }
 }
 
-resource "aws_launch_configuration" "app" {
-  image_id      = local.image_id
-  instance_type = local.instance_type
+resource "aws_launch_template" "app" {
+  image_id               = local.image_id
+  instance_type          = local.instance_type
+  key_name               = "home"
+  vpc_security_group_ids = [aws_security_group.app.id]
 
-  key_name             = "home"
-  iam_instance_profile = aws_iam_instance_profile.app.name
-  security_groups      = [aws_security_group.app.name]
+  iam_instance_profile {
+    name = aws_iam_instance_profile.app.name
+  }
 
-  user_data = <<EOT
+  user_data = base64encode(<<EOT
   #!/bin/bash
   echo "ECS_CLUSTER=${local.appid}-app" >> /etc/ecs/ecs.config
   EOT
-
-  lifecycle {
-    create_before_destroy = true
-  }
+  )
 }
-
-
