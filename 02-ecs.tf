@@ -17,7 +17,15 @@ resource "aws_ecs_capacity_provider" "app" {
   name = "${local.appid}-app"
 
   auto_scaling_group_provider {
-    auto_scaling_group_arn = aws_autoscaling_group.app.arn
+    auto_scaling_group_arn         = aws_autoscaling_group.app.arn
+    managed_termination_protection = "ENABLED"
+
+    managed_scaling {
+      # maximum_scaling_step_size = 1000
+      # minimum_scaling_step_size = 1
+      target_capacity = 100
+      status          = "ENABLED"
+    }
   }
 }
 
@@ -45,6 +53,12 @@ resource "aws_autoscaling_group" "app" {
     "GroupTerminatingInstances",
     "GroupTotalInstances"
   ]
+
+  tag {
+    key                 = "AmazonECSManaged"
+    value               = true
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_security_group" "app" {
