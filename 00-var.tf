@@ -9,3 +9,13 @@ locals {
   image_id      = "ami-000f45a90a4044e1f"
   instance_type = "t4g.nano"
 }
+
+# terraform {
+#   required_version = ">= 0.9.0"
+
+#   backend "s3" {
+#     bucket = "xxxxxx"
+#     key    = "xxxxxx.tfstate"
+#     region = "ap-northeast-1"
+#   }
+# }

@@ -32,7 +32,7 @@ resource "aws_ecs_capacity_provider" "app" {
 resource "aws_autoscaling_group" "app" {
   name               = "${local.appid}-app"
   availability_zones = ["ap-northeast-1a"]
-  max_size           = 2
+  max_size           = 1
   min_size           = 0
   desired_capacity   = 0
   health_check_type  = "ELB"
