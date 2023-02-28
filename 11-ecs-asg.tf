@@ -90,6 +90,23 @@ resource "aws_autoscaling_group" "app2" {
   }
 }
 
+resource "aws_launch_template" "app" {
+  image_id               = local.image_id
+  instance_type          = local.instance_type
+  key_name               = "home"
+  vpc_security_group_ids = [aws_security_group.app.id]
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.app.name
+  }
+
+  user_data = base64encode(<<EOT
+  #!/bin/bash
+  echo "ECS_CLUSTER=${local.appid}-app" >> /etc/ecs/ecs.config
+  EOT
+  )
+}
+
 resource "aws_security_group" "app" {
   description = "${local.appid} security group"
 
@@ -120,21 +137,4 @@ resource "aws_security_group" "app" {
     protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-resource "aws_launch_template" "app" {
-  image_id               = local.image_id
-  instance_type          = local.instance_type
-  key_name               = "home"
-  vpc_security_group_ids = [aws_security_group.app.id]
-
-  iam_instance_profile {
-    name = aws_iam_instance_profile.app.name
-  }
-
-  user_data = base64encode(<<EOT
-  #!/bin/bash
-  echo "ECS_CLUSTER=${local.appid}-app" >> /etc/ecs/ecs.config
-  EOT
-  )
 }
