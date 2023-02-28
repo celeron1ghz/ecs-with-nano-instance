@@ -24,7 +24,7 @@ resource "aws_autoscaling_group" "app1" {
   force_delete       = true
 
   launch_template {
-    id      = aws_launch_template.app.id
+    id      = aws_launch_template.app1.id
     version = "$Latest"
   }
 
@@ -62,7 +62,7 @@ resource "aws_autoscaling_group" "app2" {
   force_delete       = true
 
   launch_template {
-    id      = aws_launch_template.app.id
+    id      = aws_launch_template.app2.id
     version = "$Latest"
   }
 
@@ -90,7 +90,7 @@ resource "aws_autoscaling_group" "app2" {
   }
 }
 
-resource "aws_launch_template" "app" {
+resource "aws_launch_template" "app1" {
   image_id               = local.image_id
   instance_type          = local.instance_type
   key_name               = "home"
@@ -102,7 +102,24 @@ resource "aws_launch_template" "app" {
 
   user_data = base64encode(<<EOT
   #!/bin/bash
-  echo "ECS_CLUSTER=${local.appid}-app" >> /etc/ecs/ecs.config
+  echo "ECS_CLUSTER=${local.appid}-app-a" >> /etc/ecs/ecs.config
+  EOT
+  )
+}
+
+resource "aws_launch_template" "app2" {
+  image_id               = local.image_id
+  instance_type          = local.instance_type
+  key_name               = "home"
+  vpc_security_group_ids = [aws_security_group.app.id]
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.app.name
+  }
+
+  user_data = base64encode(<<EOT
+  #!/bin/bash
+  echo "ECS_CLUSTER=${local.appid}-app-b" >> /etc/ecs/ecs.config
   EOT
   )
 }

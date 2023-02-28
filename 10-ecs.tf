@@ -1,5 +1,9 @@
-resource "aws_ecs_cluster" "app" {
-  name = "${local.appid}-app"
+resource "aws_ecs_cluster" "app1" {
+  name = "${local.appid}-app-a"
+}
+
+resource "aws_ecs_cluster" "app2" {
+  name = "${local.appid}-app-b"
 }
 
 # resource "aws_ecs_cluster_capacity_providers" "app" {
