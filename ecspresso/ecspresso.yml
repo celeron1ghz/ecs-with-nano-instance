@@ -1,5 +1,5 @@
 region: ap-northeast-1
-cluster: acceptessa2-app
+cluster: "acceptessa2-app-{{ env `GROUP_NAME` `a` }}"
 service: "app"
 service_definition: ecs-service-def.json
 task_definition: ecs-task-def.json
