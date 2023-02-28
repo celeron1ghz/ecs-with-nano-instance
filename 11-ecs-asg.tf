@@ -14,8 +14,46 @@
 #   }
 # }
 
-resource "aws_autoscaling_group" "app" {
-  name               = "${local.appid}-app"
+resource "aws_autoscaling_group" "app1" {
+  name               = "${local.appid}-app-a"
+  availability_zones = ["ap-northeast-1a"]
+  max_size           = 1
+  min_size           = 0
+  desired_capacity   = 0
+  health_check_type  = "ELB"
+  force_delete       = true
+
+  launch_template {
+    id      = aws_launch_template.app.id
+    version = "$Latest"
+  }
+
+  enabled_metrics = [
+    "GroupMinSize",
+    "GroupMaxSize",
+    "GroupDesiredCapacity",
+    "GroupInServiceInstances",
+    "GroupPendingInstances",
+    "GroupStandbyInstances",
+    "GroupTerminatingInstances",
+    "GroupTotalInstances"
+  ]
+
+  tag {
+    key                 = "AmazonECSManaged"
+    value               = true
+    propagate_at_launch = true
+  }
+
+  lifecycle {
+    ignore_changes = [
+      desired_capacity
+    ]
+  }
+}
+
+resource "aws_autoscaling_group" "app2" {
+  name               = "${local.appid}-app-b"
   availability_zones = ["ap-northeast-1a"]
   max_size           = 1
   min_size           = 0
@@ -53,7 +91,6 @@ resource "aws_autoscaling_group" "app" {
 }
 
 resource "aws_security_group" "app" {
-  # name        = "${local.appid}-app"
   description = "${local.appid} security group"
 
   ingress {
