@@ -7,6 +7,8 @@ GROUP_B="acceptessa2-app-b"
 GROUP_A_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_A --query "length(AutoScalingGroups[0].Instances)"`
 GROUP_B_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_B --query "length(AutoScalingGroups[0].Instances)"`
 
+LATEST_DOCKER_IMAGE=`aws ecr list-images --repository-name acceptessa2-app --query "imageIds[0].imageTag" --output text`
+
 if [ $GROUP_A_COUNT -ge 1 ] && [ $GROUP_B_COUNT -ge 1 ]; then
     echo "ERROR: both group instance are exist"
     exit 1
