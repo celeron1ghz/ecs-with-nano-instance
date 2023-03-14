@@ -3,7 +3,7 @@
     {
       "cpu": 0,
       "essential": true,
-      "image": "arm64v8/nginx",
+      "image": "{{ must_env `DOCKER_IMAGE` }}",
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {

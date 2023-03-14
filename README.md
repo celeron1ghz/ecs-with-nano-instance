@@ -1,1 +1,6 @@
 # ecs-with-nano-instance
+
+## ENVIRONMENT VALUES AT ECSPRESSO
+ * GROUP_NAME
+ * DOCKER_IMAGE
+ * TFSTATE_S3_PATH
