@@ -6,3 +6,7 @@ RUN apt-get update \
     && apt-get -y autoremove gcc
 
 ADD app.psgi /root/
+
+WORKDIR /root/
+ENTRYPOINT ["/usr/local/bin/plackup"]
+CMD ["--port", "80"]
