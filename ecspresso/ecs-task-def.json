@@ -34,7 +34,7 @@
     "EC2"
   ],
   "runtimePlatform": {
-    "cpuArchitecture": "ARM64",
+    "cpuArchitecture": "{{ must_env `ARCH` }}",
     "operatingSystemFamily": "LINUX"
   }
 }
