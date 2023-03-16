@@ -1,5 +1,5 @@
 region: ap-northeast-1
-cluster: "acceptessa2-app-{{ env `GROUP_NAME` `a` }}"
+cluster: "acceptessa2-app-{{ env `ASG_GROUP_SYM` `a` }}"
 service: "app"
 service_definition: ecs-service-def.json
 task_definition: ecs-task-def.json
@@ -7,4 +7,4 @@ timeout: "10m0s"
 plugins:
   - name: tfstate
     config:
-      url: {{ must_env `TFSTATE_S3_PATH` }}
+      url: {{ must_env `TERRAFORM_TFSTATE_STORE_S3_PATH` }}
