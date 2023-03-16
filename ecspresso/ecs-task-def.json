@@ -21,6 +21,13 @@
           "hostPort": 80,
           "protocol": "tcp"
         }
+      ],
+      "command": [
+        "/usr/local/bin/plackup",
+        "-a",
+        "/root/app.psgi",
+        "--port",
+        "80"
       ]
     }
   ],
