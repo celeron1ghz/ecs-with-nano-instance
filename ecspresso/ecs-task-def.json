@@ -41,7 +41,7 @@
     "EC2"
   ],
   "runtimePlatform": {
-    "cpuArchitecture": "{{ must_env `ECS_ARCH` }}",
+    "cpuArchitecture": "{{ must_env `DOCKER_IMAGE_ARCH` }}",
     "operatingSystemFamily": "LINUX"
   }
 }

@@ -5,10 +5,9 @@ scaleout_asg() {
     ASG=$1
     SYM=${ASG: -1}
 
-    LATEST_ECR_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_CONTAINER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
+    LATEST_ECR_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
 
     export ASG_SYM=$SYM
-    export DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME
     export DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE
 
     ## create instance and invoke ecs service
