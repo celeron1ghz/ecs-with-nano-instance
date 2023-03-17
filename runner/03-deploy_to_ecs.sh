@@ -10,17 +10,7 @@ scaleout_asg() {
     aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 1
     echo "ASG($ASG) service 0 -> 1"
     ASG_SYM=$SYM ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=1
-}
-
-deploy_and_scaleout_asg() {
-    ASG=$1
-    SYM=${ASG: -1}
-
-    ## create instance and invoke ecs service
-    echo "ASG($ASG) instance 0 -> 1"
-    aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 1
-    echo "ASG($ASG) service 0 -> 1"
-    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" deploy --tasks=1
+    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE refresh --config="$PWD/../ecspresso/ecspresso.yml" refresh --tasks=1
 }
 
 scalein_asg() {
@@ -63,12 +53,6 @@ fi
 
 echo "green is $GREEN_GROUP, blue is $BLUE_GROUP"
 
-if [ $LATEST_ECR_DOCKER_IMAGE = $LATEST_TASKDEF_DOCKER_IMAGE ]; then
-    echo "taskdef_container == ecr_container, so keep taskdef."
-    scaleout_asg $BLUE_GROUP
-else
-    echo "taskdef_container != ecr_container, so create taskdef."
-    deploy_and_scaleout_asg $BLUE_GROUP
-fi
+scaleout_asg $BLUE_GROUP
 
 scalein_asg $GREEN_GROUP
