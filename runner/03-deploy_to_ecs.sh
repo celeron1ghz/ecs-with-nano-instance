@@ -1,6 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
+deploy_and_scaleup_asg() {
+    ## create instance and invoke ecs service
+    echo "ASG($1) instance 0 -> 1"
+    aws autoscaling set-desired-capacity --auto-scaling-group-name $BLUE_GROUP --desired-capacity 1
+    echo "ASG($1) service 0 -> 1"
+    ASG_GROUP_SYM=$1 DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" deploy --tasks=1
+}
+
+scaledown_asg() {
+    ## stop ecs service and shutdown instance
+    echo "ASG($1) service 1 -> 0"
+    ASG_GROUP_SYM=$1 ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=0
+    echo "ASG($1) instance 1 -> 0"
+    aws autoscaling set-desired-capacity --auto-scaling-group-name $GREEN_GROUP --desired-capacity 0
+}
+
 GROUP_A="acceptessa2-app-a"
 GROUP_B="acceptessa2-app-b"
 
@@ -32,14 +48,6 @@ GREEN_SYM=${GREEN_GROUP: -1}
 
 echo "green is $GREEN_GROUP, blue is $BLUE_GROUP"
 
-## IN BLUE GROUP: create instance and invoke ecs service
-echo "BLUE instance 0 -> 1"
-aws autoscaling set-desired-capacity --auto-scaling-group-name $BLUE_GROUP --desired-capacity 1
-echo "BLUE service 0 -> 1"
-ASG_GROUP_SYM=$BLUE_SYM  DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" deploy --tasks=1
+deploy_and_scaleup_asg $BLUE_SYM
 
-## IN GREEN GROUP: stop ecs service and shutdown instance
-echo "GREEN service 1 -> 0"
-ASG_GROUP_SYM=$GREEN_SYM ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=0
-echo "GREEN instance 1 -> 0"
-aws autoscaling set-desired-capacity --auto-scaling-group-name $GREEN_GROUP --desired-capacity 0
+scaledown_asg $GREEN_SYM

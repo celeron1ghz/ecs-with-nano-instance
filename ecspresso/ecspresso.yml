@@ -1,5 +1,5 @@
 region: ap-northeast-1
-cluster: "acceptessa2-app-{{ env `ASG_GROUP_SYM` `a` }}"
+cluster: "acceptessa2-app-{{ must_env `ASG_GROUP_SYM` }}"
 service: "app"
 service_definition: ecs-service-def.json
 task_definition: ecs-task-def.json
