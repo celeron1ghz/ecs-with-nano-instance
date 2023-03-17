@@ -5,12 +5,21 @@ scaleout_asg() {
     ASG=$1
     SYM=${ASG: -1}
 
+    LATEST_ECR_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_CONTAINER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
+
+    export ASG_SYM=$SYM
+    export DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME
+    export DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE
+
     ## create instance and invoke ecs service
     echo "ASG($ASG) instance 0 -> 1"
     aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 1
+
+    echo "ASG($ASG) service deploy"
+    ecspresso --config=$ECSPRESSO_CONFIG_PATH deploy --latest-task-definition
+
     echo "ASG($ASG) service 0 -> 1"
-    ASG_SYM=$SYM ecspresso --config=$ECSPRESSO_CONFIG_PATH scale --tasks=1
-    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE refresh --config=$ECSPRESSO_CONFIG_PATH refresh --tasks=1
+    ecspresso --config=$ECSPRESSO_CONFIG_PATH scale --tasks=1
 }
 
 scalein_asg() {
@@ -20,6 +29,7 @@ scalein_asg() {
     ## stop ecs service and shutdown instance
     echo "ASG($ASG) service 1 -> 0"
     ASG_SYM=$SYM ecspresso --config=$ECSPRESSO_CONFIG_PATH scale --tasks=0
+
     echo "ASG($ASG) instance 1 -> 0"
     aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 0
 }
@@ -29,9 +39,6 @@ GROUP_B="acceptessa2-app-b"
 
 GROUP_A_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_A --query "length(AutoScalingGroups[0].Instances)"`
 GROUP_B_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_B --query "length(AutoScalingGroups[0].Instances)"`
-
-LATEST_ECR_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_CONTAINER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
-LATEST_TASKDEF_DOCKER_IMAGE=`aws ecs describe-task-definition --task-definition acceptessa2-test --query "taskDefinition.containerDefinitions[0].image" --output text | perl -ne 'print +(split ":")[1]'`
 
 if [ $GROUP_A_COUNT -ge 1 ] && [ $GROUP_B_COUNT -ge 1 ]; then
     echo "ERROR: both group instance are exist"
