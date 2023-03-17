@@ -7,5 +7,5 @@ if [ $LATEST_ECR_DOCKER_IMAGE = $LATEST_TASKDEF_DOCKER_IMAGE ]; then
     echo "taskdef_container == ecr_container, so keep taskdef."
 else
     echo "taskdef_container != ecr_container, so create taskdef."
-    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" register
+    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE ecspresso --config=$ECSPRESSO_CONFIG_PATH register
 fi

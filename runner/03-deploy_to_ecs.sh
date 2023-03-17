@@ -9,8 +9,8 @@ scaleout_asg() {
     echo "ASG($ASG) instance 0 -> 1"
     aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 1
     echo "ASG($ASG) service 0 -> 1"
-    ASG_SYM=$SYM ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=1
-    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE refresh --config="$PWD/../ecspresso/ecspresso.yml" refresh --tasks=1
+    ASG_SYM=$SYM ecspresso --config=$ECSPRESSO_CONFIG_PATH scale --tasks=1
+    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE refresh --config=$ECSPRESSO_CONFIG_PATH refresh --tasks=1
 }
 
 scalein_asg() {
@@ -19,7 +19,7 @@ scalein_asg() {
 
     ## stop ecs service and shutdown instance
     echo "ASG($ASG) service 1 -> 0"
-    ASG_SYM=$SYM ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=0
+    ASG_SYM=$SYM ecspresso --config=$ECSPRESSO_CONFIG_PATH scale --tasks=0
     echo "ASG($ASG) instance 1 -> 0"
     aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 0
 }
