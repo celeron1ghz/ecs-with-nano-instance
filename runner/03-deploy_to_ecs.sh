@@ -2,19 +2,25 @@
 set -euo pipefail
 
 deploy_and_scaleup_asg() {
+    ASG=$1
+    SYM=${ASG: -1}
+
     ## create instance and invoke ecs service
-    echo "ASG($1) instance 0 -> 1"
-    aws autoscaling set-desired-capacity --auto-scaling-group-name $BLUE_GROUP --desired-capacity 1
-    echo "ASG($1) service 0 -> 1"
-    ASG_GROUP_SYM=$1 DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" deploy --tasks=1
+    echo "ASG($ASG) instance 0 -> 1"
+    aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 1
+    echo "ASG($ASG) service 0 -> 1"
+    ASG_SYM=$SYM DOCKER_IMAGE_NAME=$DOCKER_CONTAINER_IMAGE_NAME DOCKER_IMAGE_TAG=$LATEST_ECR_DOCKER_IMAGE ecspresso --config="$PWD/../ecspresso/ecspresso.yml" deploy --tasks=1
 }
 
 scaledown_asg() {
+    ASG=$1
+    SYM=${ASG: -1}
+
     ## stop ecs service and shutdown instance
-    echo "ASG($1) service 1 -> 0"
-    ASG_GROUP_SYM=$1 ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=0
-    echo "ASG($1) instance 1 -> 0"
-    aws autoscaling set-desired-capacity --auto-scaling-group-name $GREEN_GROUP --desired-capacity 0
+    echo "ASG($ASG) service 1 -> 0"
+    ASG_SYM=$SYM ecspresso --config="$PWD/../ecspresso/ecspresso.yml" scale --tasks=0
+    echo "ASG($ASG) instance 1 -> 0"
+    aws autoscaling set-desired-capacity --auto-scaling-group-name $ASG --desired-capacity 0
 }
 
 GROUP_A="acceptessa2-app-a"
@@ -23,7 +29,8 @@ GROUP_B="acceptessa2-app-b"
 GROUP_A_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_A --query "length(AutoScalingGroups[0].Instances)"`
 GROUP_B_COUNT=`aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $GROUP_B --query "length(AutoScalingGroups[0].Instances)"`
 
-LATEST_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_CONTAINER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
+LATEST_ECR_DOCKER_IMAGE=`aws ecr list-images --repository-name $DOCKER_CONTAINER_IMAGE_NAME --query "imageIds[0].imageTag" --output text`
+LATEST_TASKDEF_DOCKER_IMAGE=`aws ecs describe-task-definition --task-definition acceptessa2-test --query "taskDefinition.containerDefinitions[0].image" --output text | perl -ne 'print +(split ":")[1]'`
 
 if [ $GROUP_A_COUNT -ge 1 ] && [ $GROUP_B_COUNT -ge 1 ]; then
     echo "ERROR: both group instance are exist"
@@ -43,11 +50,8 @@ else
     BLUE_GROUP=$GROUP_A
 fi
 
-BLUE_SYM=${BLUE_GROUP: -1}
-GREEN_SYM=${GREEN_GROUP: -1}
-
 echo "green is $GREEN_GROUP, blue is $BLUE_GROUP"
 
-deploy_and_scaleup_asg $BLUE_SYM
+deploy_and_scaleup_asg $BLUE_GROUP
 
-scaledown_asg $GREEN_SYM
+scaledown_asg $GREEN_GROUP
